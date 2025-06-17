@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Register - E-Wallet</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-card">
+      <h2>📝 Create Account</h2>
+      <form id="registerForm">
+        <input type="text" id="newUsername" placeholder="👤 Username" required />
+        <input type="password" id="newPassword" placeholder="🔒 Password" required />
+        <input type="text" id="role" placeholder="📌 Role (e.g. user)" required />
+        <button type="submit">Register</button>
+      </form>
+      <p class="register-link">Already have an account? <a href="login.html">Login here</a></p>
+      <div id="registerError" class="error" style="color: red; margin-top: 10px;"></div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('newUsername').value;
+      const password = document.getElementById('newPassword').value;
+      const role = document.getElementById('role').value;
+
+      try {
+        const res = await fetch('http://localhost:8082/auth/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ username, password, role })
+        });
+
+        const registerError = document.getElementById('registerError');
+
+        if (res.ok) {
+          alert('✅ Registration successful! Now login.');
+          window.location.href = 'login.html';
+        } else if (res.status === 409) {
+          registerError.textContent = '❌ Username already exists. Try a different one.';
+        } else {
+          registerError.textContent = '❌ Registration failed. Try again.';
+        }
+      } catch (err) {
+        document.getElementById('registerError').textContent = '❌ Server error. Please try again later.';
+      }
+    });
+  </script>
+</body>
+</html>

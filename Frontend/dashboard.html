@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>E-Wallet Dashboard</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f3f4f6;
+      color: #333;
+    }
+
+    .navbar {
+      background: #fff;
+      padding: 15px 30px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .navbar h1 {
+      color: #4f46e5;
+      margin: 0;
+    }
+
+    .navbar .user-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background-color: #4f46e5;
+      color: white;
+    }
+
+    .btn-danger {
+      background-color: #ef4444;
+      color: white;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 0 15px;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      margin-bottom: 20px;
+    }
+
+    .card h2 {
+      margin-top: 0;
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+    }
+
+    .balance-display {
+      font-size: 2rem;
+      font-weight: bold;
+    }
+
+    .flex-between {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    input[type="text"], input[type="number"] {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+
+    .transaction-item {
+      background-color: #f9fafb;
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .card table {
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <h1>E-Wallet</h1>
+    <div class="user-info">
+      <span id="username">Loading...</span>
+      <button id="logoutBtn" class="btn btn-danger">Logout</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="card">
+      <h2>Wallet Balance</h2>
+      <div class="flex-between">
+        <div id="walletBalance" class="balance-display"> ****</div>
+        <button id="toggleBalanceBtn" class="btn btn-primary">Show Balance</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Send Money</h2>
+      <div class="form-grid">
+        <input type="text" id="toUser" placeholder="Recipient Username">
+        <input type="number" id="amount" placeholder="Amount">
+        <button id="sendMoneyBtn" class="btn btn-primary">Send</button>
+      </div>
+      <div id="transferMessage" style="margin-top:10px; font-weight:bold;"></div>
+    </div>
+
+    <div class="card">
+      <h2>Top-Up Wallet</h2>
+      <div class="form-grid">
+        <input type="number" id="topupAmount" placeholder="Amount to add">
+        <button id="topupBtn" class="btn btn-primary">Top-Up</button>
+      </div>
+      <div id="topupMessage" style="margin-top:10px; font-weight:bold;"></div>
+    </div>
+
+    <div class="card">
+      <h2>Transaction History</h2>
+      <div id="transactions">
+        <table>
+          <thead style="background-color: #e5e7eb;">
+            <tr>
+              <th style="padding: 10px;">ID</th>
+              <th style="padding: 10px;">Sender</th>
+              <th style="padding: 10px;">Receiver</th>
+              <th style="padding: 10px;">Amount</th>
+              <th style="padding: 10px;">Date/Time</th>
+            </tr>
+          </thead>
+          <tbody id="txnTableBody">
+            <!-- Transactions will load here -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const jwt = localStorage.getItem("token");
+
+    const getWithAuth = (url) => {
+      return fetch(url, {
+        headers: { Authorization: `Bearer ${jwt}` }
+      });
+    };
+
+    async function loadBalance() {
+   const balanceSpan = document.getElementById("walletBalance");
+  try {
+    const res = await getWithAuth("http://localhost:8083/wallet/getbalance");
+    const json = await res.json(); // ✅ Parse response as JSON
+    const balance = json.Balance;  // ✅ Extract just the value
+    balanceSpan.innerText = `\u20b9 ${balance}`;
+  } catch (e) {
+    balanceSpan.innerText = "****";
+    alert("⚠️ Failed to fetch balance.");
+  }
+}
+
+document.getElementById("toggleBalanceBtn").addEventListener("click", async () => {
+  const balanceSpan = document.getElementById("walletBalance");
+  const btn = document.getElementById("toggleBalanceBtn");
+
+  if (btn.innerText === 'Show Balance') {
+    await loadBalance();
+    btn.innerText = 'Hide Balance';
+  } else {
+    balanceSpan.innerText = '\u20b9 ****';
+    btn.innerText = 'Show Balance';
+  }
+});
+
+
+    document.getElementById("sendMoneyBtn").addEventListener("click", async () => {
+      const to = document.getElementById("toUser").value;
+      const amount = document.getElementById("amount").value;
+
+      try {
+        const res = await fetch(`http://localhost:8084/transaction/send?to=${to}&amount=${amount}`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${jwt}` }
+        });
+
+        const message = await res.text();
+
+        if (res.ok) {
+          alert(message);
+          loadTransactions();
+          loadBalance();
+          document.getElementById("toUser").value = "";
+          document.getElementById("amount").value = "";
+        } else {
+          alert(message);
+        }
+
+      } catch (e) {
+        alert("Error sending money");
+      }
+    });
+
+    document.getElementById("topupBtn").addEventListener("click", async () => {
+      const amount = document.getElementById("topupAmount").value;
+
+      if (!jwt) {
+        alert("You are not logged in!");
+        return;
+      }
+
+      try {
+        const response = await fetch(`http://localhost:8083/wallet/topup?amt=${amount}`, {
+          method: "POST",
+          headers: {
+            "Authorization": "Bearer " + jwt,
+          },
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error("Top-up failed: " + response.status + " " + errorText);
+        }
+
+        const result = await response.json();
+        alert("✅ Top-up successful! New Balance: ₹" + result.amount);
+        loadTransactions();
+        loadBalance();
+        document.getElementById("topupAmount").value = "";
+      } catch (error) {
+        console.error("❌ Error during top-up:", error);
+        alert("❌ Error during top-up: " + error.message);
+      }
+    });
+
+    function loadTransactions() {
+      fetch("http://localhost:8084/transaction/history", {
+        method: "GET",
+        headers: {
+          "Authorization": "Bearer " + jwt
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        const table = document.getElementById("txnTableBody");
+        table.innerHTML = "";
+        data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)); // Newest first
+        data.forEach(txn => {
+          const row = `
+            <tr>
+              <td>${txn.id}</td>
+              <td>${txn.sender}</td>
+              <td>${txn.receiver}</td>
+              <td>₹${txn.amount}</td>
+              <td>${txn.timestamp.replace("T", " ").substring(0, 19)}</td>
+            </tr>`;
+          table.innerHTML += row;
+        });
+      })
+      .catch(err => {
+        console.error("Failed to load transactions:", err);
+      });
+    }
+
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      localStorage.removeItem("token");
+      window.location.href = "/login.html"; // update path as needed
+    });
+
+    async function loadUsername() {
+      try {
+        const res = await fetch("http://localhost:8082/auth/me", {
+          headers: { Authorization: `Bearer ${jwt}` }
+        });
+        const user = await res.json();
+        document.getElementById("username").innerText = user.username;
+      } catch (e) {
+        document.getElementById("username").innerText = "Guest";
+        console.error("Failed to load username:", e);
+      }
+    }
+
+    // On page load
+    window.onload = () => {
+      loadUsername();
+      loadTransactions();
+    };
+  </script>
+</body>
+</html>

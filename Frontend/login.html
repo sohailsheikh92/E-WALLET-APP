@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>E-Wallet Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(to right, #4e54c8, #8f94fb);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .login-card {
+      background: white;
+      padding: 3rem;
+      border-radius: 1rem;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      width: 100%;
+      max-width: 400px;
+      position: relative;
+    }
+    .login-card h2 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      color: #4e54c8;
+    }
+    .input-group {
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+    .input-group input {
+      width: 100%;
+      padding: 0.8rem;
+      border: 1px solid #ccc;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+    }
+    .input-group label {
+      position: absolute;
+      left: 15px;
+      top: 10px;
+      color: #999;
+      font-size: 0.9rem;
+      pointer-events: none;
+      transition: 0.3s ease all;
+    }
+    .input-group input:focus + label,
+    .input-group input:not(:placeholder-shown) + label {
+      top: -10px;
+      left: 10px;
+      background: white;
+      padding: 0 5px;
+      color: #4e54c8;
+      font-size: 0.75rem;
+    }
+    .password-wrapper {
+      position: relative;
+    }
+    .toggle-eye {
+      position: absolute;
+      top: 50%;
+      right: 15px;
+      transform: translateY(-50%);
+      cursor: pointer;
+      font-size: 1.2rem;
+    }
+    .login-card button {
+      width: 100%;
+      padding: 0.8rem;
+      background-color: #4e54c8;
+      color: white;
+      border: none;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+    .login-card button:hover {
+      background-color: #3b42a3;
+    }
+    .login-card p {
+      text-align: center;
+      margin-top: 1rem;
+    }
+    .login-card a {
+      color: #4e54c8;
+      text-decoration: none;
+    }
+    #loginError {
+      color: red;
+      text-align: center;
+      margin-top: 1rem;
+    }
+    .quote {
+      text-align: center;
+      margin-top: 1rem;
+      font-style: italic;
+      font-size: 0.9rem;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <h2>Login to E-Wallet</h2>
+    <form id="loginForm">
+      <div class="input-group">
+        <input type="text" id="username" placeholder=" " required />
+        <label>Username</label>
+      </div>
+      <div class="input-group password-wrapper">
+        <input type="password" id="password" placeholder=" " required pattern="(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{6,}" title="Password must contain at least one letter, one number, one special character, and be at least 6 characters long." />
+        <label>Password</label>
+        <span id="togglePassword" class="toggle-eye">👁</span>
+      </div>
+      <button type="submit" id="loginBtn">Login</button>
+    </form>
+    <p>Don't have an account? <a href="register.html">Register here</a></p>
+    <div id="loginError"></div>
+    <div class="quote" id="dailyQuote"></div>
+  </div>
+
+  <script>
+    // Toggle password visibility
+    document.getElementById("togglePassword").addEventListener("click", () => {
+      const passInput = document.getElementById("password");
+      passInput.type = passInput.type === "password" ? "text" : "password";
+    });
+
+    // Daily quote
+    const quotes = [
+      "💡 Tip: Never share your PIN or OTP.",
+      "💡 Secure your wallet with a strong password.",
+      "💡 Use your wallet for fast, secure payments!",
+      "💡 Track your spending for better budgeting."
+    ];
+    document.getElementById("dailyQuote").textContent = quotes[Math.floor(Math.random() * quotes.length)];
+
+    // Optional: Loading button
+    const loginForm = document.getElementById("loginForm");
+    const loginBtn = document.getElementById("loginBtn");
+
+    loginForm.addEventListener("submit", () => {
+      loginBtn.disabled = true;
+      loginBtn.textContent = "Logging in...";
+    });
+  </script>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
